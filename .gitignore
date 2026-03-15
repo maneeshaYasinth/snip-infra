@@ -1,0 +1,32 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# Cloud/CLI credentials
+.aws/
+.azure/
+.gcp/
+
+# Terraform local state and sensitive variable files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+
+# Serverless framework secrets
+.serverless/
