@@ -30,3 +30,7 @@ crash.log
 
 # Serverless framework secrets
 .serverless/
+
+
+*node_modules
+npm-debug.log
