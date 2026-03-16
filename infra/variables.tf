@@ -13,7 +13,7 @@ variable "project_name" {
     default = "snip-infra"
 }
 
-variable "enviromnent" {
+variable "environment" {
   type = string
   default = "dev"
 }

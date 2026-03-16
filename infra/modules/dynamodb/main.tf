@@ -15,7 +15,7 @@ resource "aws_dynamodb_table" "url_shortener" {
 
   tags = {
     Project = var.project_name
-    Enviroment = var.enviroment
+    Environment = var.environment
   }
   
 }
