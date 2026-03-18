@@ -2,6 +2,13 @@ provider "aws" {
   region = var.aws_region
 }
 
+module "vpc" {
+  source = "./modules/vpc"
+  project = var.project_name
+  environment = var.environment
+
+}
+
 module "dynamodb" {
     source = "./modules/dynamodb"
 
