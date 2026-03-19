@@ -30,7 +30,7 @@ resource "aws_security_group" "alb" {
 resource "aws_alb" "main" {
   name = "${var.project}-alb"
   internal = false
-  security_groups = aws_security_group.alb.id
+  security_groups = [aws_security_group.alb.id]
   subnets = var.public_subnet_ids
 
   tags = {
