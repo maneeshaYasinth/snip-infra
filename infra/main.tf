@@ -46,3 +46,10 @@ module "ecs" {
   dynamodb_table_name = module.dynamodb.table_name
   dynamodb_table_arn  = module.dynamodb.table_arn
 }
+
+module "cloudfront" {
+  source       = "./modules/cloudfront"
+  project_name      = var.project_name
+  environment  = var.environment
+  alb_dns_name = module.alb.alb_dns_name
+}

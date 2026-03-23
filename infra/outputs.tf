@@ -10,3 +10,8 @@ output "app_url" {
   description = "Access the app here"
   value       = "http://${module.alb.alb_dns_name}"
 }
+
+output "cloudfront_url" {
+  description = "Access the app via CloudFront"
+  value       = "https://${module.cloudfront.cloudfront_domain}"
+}
