@@ -53,3 +53,12 @@ module "cloudfront" {
   environment  = var.environment
   alb_dns_name = module.alb.alb_dns_name
 }
+
+module "cloudwatch" {
+  source              = "./modules/cloudwatch"
+  project_name        = var.project_name
+  environment         = var.environment
+  region              = var.aws_region
+  alb_arn_suffix      = module.alb.alb_arn_suffix
+  dynamodb_table_name = module.dynamodb.table_name
+}
