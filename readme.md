@@ -1,89 +1,102 @@
 # snip. - Containerized URL Shortener on AWS
 
-A cloud-native URL shortener built with a containerized, scalable 3-tier architecture on AWS.
+snip. is a production-style URL shortener built on AWS using a containerized Node.js application, infrastructure-as-code with Terraform, and automated deployments with GitHub Actions.
 
 Inspired by the [AWS Guidance for Building a Containerized and Scalable Web Application](https://aws.amazon.com/solutions/guidance/building-a-containerized-and-scalable-web-application-on-aws/).
 
 ---
 
-## Delivery Status
+## Final Delivery Status
 
 - [x] Phase 1 - App (Node.js + Docker)
 - [x] Phase 2 - Core Infra (VPC, ECS, ALB, DynamoDB, ECR)
 - [x] Phase 3 - Edge (CloudFront)
-- [ ] Phase 4 - CloudWatch dashboard
+- [x] Phase 4 - CloudWatch dashboard
 - [x] Phase 5 - CI/CD (GitHub Actions)
 
 ---
 
-## Architecture (Current)
+## Architecture
 
-| Layer | Service | Status |
+| Layer | AWS Service | Purpose |
 |---|---|---|
-| Edge | CloudFront | Complete |
-| Load Balancing | Application Load Balancer (ALB) | Complete |
-| Compute | ECS Fargate (Node.js + Express) | Complete |
-| Database | DynamoDB | Complete |
-| Container Registry | Amazon ECR | Complete |
-| Networking | VPC, public/private subnets, security groups | Complete |
-| Observability | CloudWatch Logs + ECS Container Insights | Partial (dashboard pending) |
-| IaC | Terraform modules | Complete |
-| CI/CD | GitHub Actions workflow | Complete |
+| Edge | CloudFront | Global edge caching and low-latency delivery |
+| Load Balancing | Application Load Balancer | Routes HTTP traffic to ECS tasks |
+| Compute | ECS Fargate | Runs containerized Node.js API |
+| Data | DynamoDB | Stores short code -> long URL mappings |
+| Registry | Amazon ECR | Stores versioned Docker images |
+| Networking | Amazon VPC | Isolates resources across public/private subnets |
+| Observability | CloudWatch Logs, Dashboard, Alarms | Runtime visibility and alerting |
+| Automation | GitHub Actions | Build, push, and deploy pipeline |
+| IaC | Terraform | Reproducible infrastructure provisioning |
 
 ### Architecture Diagram
 
 ```mermaid
 flowchart LR
-        U[User Browser]
-        CF[CloudFront]
-        ALB[Application Load Balancer]
-        ECS[ECS Fargate Service\nNode.js + Express]
-        DDB[(DynamoDB)]
-        ECR[(Amazon ECR)]
-        GHA[GitHub Actions]
-        CW[CloudWatch Logs\nContainer Insights]
-        CWD[CloudWatch Dashboard\nPhase 4 - Pending]
+    U[User Browser]
+    CF[CloudFront]
+    ALB[Application Load Balancer]
+    ECS[ECS Fargate Service\nNode.js + Express]
+    DDB[(DynamoDB)]
+    ECR[(Amazon ECR)]
+    GHA[GitHub Actions]
+    CWL[CloudWatch Logs]
+    CWD[CloudWatch Dashboard]
+    CWA[CloudWatch Alarm]
 
-        U --> CF --> ALB --> ECS --> DDB
-        GHA -->|Build + push image| ECR
-        GHA -->|Force new deployment| ECS
-        ECS --> CW
-        CWD -.planned.-> CW
+    U --> CF --> ALB --> ECS --> DDB
+    GHA -->|Build and push image| ECR
+    GHA -->|Force new deployment| ECS
+    ECS --> CWL
+    ECS --> CWD
+    ALB --> CWD
+    DDB --> CWD
+    ECS --> CWA
 ```
 
 ---
 
 ## What Was Built
 
-### Phase 1 - Application (Node.js + Docker)
+### Application
 
-- Express API for URL shortening and redirects
-- DynamoDB integration for persistent URL mappings
-- Dockerized application image
+- Node.js + Express API for creating and resolving short URLs
+- URL validation and short code generation with `nanoid`
+- Click count tracking in DynamoDB
+- Health endpoint for ALB and container checks
+- Static frontend served from the app container
 
-### Phase 2 - Core Infrastructure (Terraform)
+### Infrastructure (Terraform Modules)
 
-- VPC module with public/private networking
-- ALB module with health checks and ECS target group
-- ECS Fargate cluster, task definition, service, and IAM roles
-- DynamoDB table module
-- ECR repository module
+- `vpc`: networking and subnet layout
+- `alb`: internet-facing ALB, listener, target group, and security group
+- `ecs`: cluster, task definition, service, IAM roles, and log group
+- `dynamodb`: URL storage table
+- `ecr`: image repository
+- `cloudfront`: edge distribution in front of ALB
+- `cloudwatch`: dashboard widgets and high CPU alarm
 
-### Phase 3 - Edge
+### Observability
 
-- CloudFront distribution in front of ALB
+CloudWatch dashboard includes key service metrics:
 
-### Phase 5 - CI/CD
+- ECS CPU utilization
+- ECS memory utilization
+- ALB request count
+- ALB target response time
+- DynamoDB read capacity consumption
+- DynamoDB write capacity consumption
 
-- GitHub Actions workflow to:
-    - build and tag Docker images
-    - push images to ECR
-    - trigger ECS rolling deployment
-    - wait for service stabilization
+### CI/CD
 
-### Phase 4 (In Progress)
+GitHub Actions workflow (on push to `main` for `app/**`) automatically:
 
-- CloudWatch dashboard for product and system metrics
+- builds Docker image
+- tags image with commit SHA and `latest`
+- pushes image to ECR
+- forces ECS service deployment
+- waits until ECS service is stable
 
 ---
 
@@ -91,34 +104,78 @@ flowchart LR
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/shorten` | Shorten a URL |
+| `POST` | `/shorten` | Create a short URL |
 | `GET` | `/:code` | Redirect to original URL |
 | `GET` | `/urls` | List all shortened URLs |
-| `GET` | `/health` | Health check used by ALB |
+| `GET` | `/health` | Health check endpoint |
 
 ---
 
-## Project Structure
+## Repository Structure
 
 ```text
 snip-infra/
-|- app/                  # Node.js + Express application
-|  |- public/            # Static frontend assets
+|- app/
+|  |- public/
 |  |- server.js
 |  |- Dockerfile
 |  `- package.json
-|- infra/                # Terraform infrastructure
+|- infra/
 |  |- modules/
 |  |  |- vpc/
-|  |  |- ecr/
-|  |  |- dynamodb/
-|  |  |- ecs/
 |  |  |- alb/
-|  |  `- cloudfront/
+|  |  |- ecs/
+|  |  |- dynamodb/
+|  |  |- ecr/
+|  |  |- cloudfront/
+|  |  `- cloudwatch/
 |  |- main.tf
 |  |- variables.tf
 |  `- outputs.tf
-`- .github/
-     `- workflows/
-            `- deploy.yml
+|- .github/
+|  `- workflows/
+|     `- deploy.yml
+`- readme.md
 ```
+
+---
+
+## Run and Deploy
+
+### Local App Run
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+### Docker Build (Local)
+
+```bash
+cd app
+docker build -t snip-infra:local .
+docker run -p 3000:3000 snip-infra:local
+```
+
+### Infrastructure Provisioning
+
+```bash
+cd infra
+terraform init
+terraform plan
+terraform apply
+```
+
+### Useful Terraform Outputs
+
+- `cloudfront_url`
+- `app_url`
+- `cloudwatch_dashboard`
+- `ecr_repo_url`
+
+---
+
+## Project Outcome
+
+This project delivers a complete, cloud-native URL shortener platform with scalable compute, managed storage, edge delivery, monitoring, and automated deployments, all defined as code.
