@@ -11,7 +11,7 @@ Inspired by the [AWS Guidance for Building a Containerized and Scalable Web Appl
 - [x] Phase 1 - App (Node.js + Docker)
 - [x] Phase 2 - Core Infra (VPC, ECS, ALB, DynamoDB, ECR)
 - [x] Phase 3 - Edge (CloudFront)
-- [ ] Phase 4 - Cognito + CloudWatch dashboard
+- [ ] Phase 4 - CloudWatch dashboard
 - [x] Phase 5 - CI/CD (GitHub Actions)
 
 ---
@@ -27,7 +27,6 @@ Inspired by the [AWS Guidance for Building a Containerized and Scalable Web Appl
 | Container Registry | Amazon ECR | Complete |
 | Networking | VPC, public/private subnets, security groups | Complete |
 | Observability | CloudWatch Logs + ECS Container Insights | Partial (dashboard pending) |
-| Authentication | Amazon Cognito | Pending |
 | IaC | Terraform modules | Complete |
 | CI/CD | GitHub Actions workflow | Complete |
 
@@ -43,14 +42,12 @@ flowchart LR
         ECR[(Amazon ECR)]
         GHA[GitHub Actions]
         CW[CloudWatch Logs\nContainer Insights]
-        COG[Amazon Cognito\nPhase 4 - Pending]
         CWD[CloudWatch Dashboard\nPhase 4 - Pending]
 
         U --> CF --> ALB --> ECS --> DDB
         GHA -->|Build + push image| ECR
         GHA -->|Force new deployment| ECS
         ECS --> CW
-        COG -.planned.-> CF
         CWD -.planned.-> CW
 ```
 
@@ -86,7 +83,6 @@ flowchart LR
 
 ### Phase 4 (In Progress)
 
-- Amazon Cognito integration
 - CloudWatch dashboard for product and system metrics
 
 ---
