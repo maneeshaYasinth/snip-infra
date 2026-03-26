@@ -30,6 +30,12 @@ Inspired by the [AWS Guidance for Building a Containerized and Scalable Web Appl
 | Automation | GitHub Actions | Build, push, and deploy pipeline |
 | IaC | Terraform | Reproducible infrastructure provisioning |
 
+
+> **Infrastructure note:** This implementation uses a NAT Gateway for outbound connectivity 
+> from private subnets to AWS services (ECR, DynamoDB). In a production workload, 
+> VPC endpoints would replace the NAT Gateway to reduce cost and eliminate public internet 
+> data transfer.
+
 ### Architecture Diagram
 
 ```mermaid
@@ -157,6 +163,12 @@ cd app
 docker build -t snip-infra:local .
 docker run -p 3000:3000 snip-infra:local
 ```
+
+## Prerequisites
+- AWS account with CLI configured
+- Terraform >= 1.5
+- Docker (OrbStack or Docker Desktop)
+- Node.js 20+
 
 ### Infrastructure Provisioning
 
